@@ -1,6 +1,6 @@
 services:
   code-server:
-    build: .
+    image: lscr.io/linuxserver/code-server:latest
     restart: unless-stopped
     environment:
       PUID: "1000"
@@ -13,8 +13,19 @@ services:
       - code-server-config:/config
       - /docker/openclaw-6pqv/data:/config/workspace:rw
       - /var/run/docker.sock:/var/run/docker.sock
+      # Persist installed tools across restarts
+      - homebrew:/home/abc/.linuxbrew
+      - nvm:/home/abc/.nvm
+      - opencode-config:/home/abc/.config/opencode
+      - zsh-config:/home/abc/.zsh
+      - bashrc:/home/abc/.bashrc.d
     ports:
       - "8443"
 
 volumes:
   code-server-config:
+  homebrew:
+  nvm:
+  opencode-config:
+  zsh-config:
+  bashrc:
