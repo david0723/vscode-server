@@ -1,0 +1,20 @@
+services:
+  code-server:
+    build: .
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - PASSWORD=${CODE_PASSWORD}
+      - SUDO_PASSWORD=${SUDO_PASSWORD}
+      - DEFAULT_WORKSPACE=/config/workspace
+    volumes:
+      - code-server-config:/config
+      - /docker/openclaw-6pqv/data:/config/workspace:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8443"
+
+volumes:
+  code-server-config:
