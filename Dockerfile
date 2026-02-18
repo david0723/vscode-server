@@ -29,6 +29,11 @@ RUN echo 'eval "$(/home/abc/.linuxbrew/bin/brew shellenv)"' >> /home/abc/.bashrc
 # Install OpenCode via brew (as abc user)
 RUN su - abc -c 'eval "$(/home/abc/.linuxbrew/bin/brew shellenv)" && brew install opencode-ai/tap/opencode'
 
+# Install Node.js via NodeSource (LTS version)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
 # Add OpenClaw aliases
 RUN echo 'alias oc="docker exec -it \$(docker ps -q -f name=openclaw) openclaw"' >> /home/abc/.bashrc \
     && echo 'alias oc-shell="docker exec -it \$(docker ps -q -f name=openclaw) bash"' >> /home/abc/.bashrc
