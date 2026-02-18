@@ -2,7 +2,7 @@ FROM lscr.io/linuxserver/code-server:latest
 
 USER root
 
-# Install dependencies
+# Install dependencies including zsh
 RUN apt-get update && apt-get install -y \
     curl \
     git \
@@ -10,7 +10,14 @@ RUN apt-get update && apt-get install -y \
     procps \
     file \
     jq \
+    zsh \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Oh My Zsh for abc user
+RUN su - abc -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended'
+
+# Set zsh as default shell for abc user
+RUN chsh -s $(which zsh) abc
 
 # Install Docker CLI
 RUN curl -fsSL https://get.docker.com -o /tmp/get-docker.sh \
