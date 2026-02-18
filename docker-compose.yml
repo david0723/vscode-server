@@ -3,12 +3,12 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-      - PASSWORD=${CODE_PASSWORD}
-      - SUDO_PASSWORD=${SUDO_PASSWORD}
-      - DEFAULT_WORKSPACE=/config/workspace
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "Etc/UTC"
+      PASSWORD: "${CODE_PASSWORD:-changeme}"
+      SUDO_PASSWORD: "${SUDO_PASSWORD:-changeme}"
+      DEFAULT_WORKSPACE: "/config/workspace"
     volumes:
       - code-server-config:/config
       - /docker/openclaw-6pqv/data:/config/workspace:rw
