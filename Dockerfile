@@ -13,11 +13,8 @@ RUN apt-get update && apt-get install -y \
     zsh \
     && rm -rf /var/lib/apt/lists/*
 
-# Set zsh as default shell for abc user
+# Set zsh as default shell
 RUN chsh -s $(which zsh) abc
-
-# Clone minimal zsh config (skip Oh My Zsh for now - install manually later if needed)
-RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/abc/.powerlevel10k 2>/dev/null || true
 
 # Install Docker CLI
 RUN curl -fsSL https://get.docker.com -o /tmp/get-docker.sh \
@@ -29,33 +26,34 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Homebrew (as abc user)
-RUN mkdir -p /home/abc/.linuxbrew \
-    && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip-components=1 -C /home/abc/.linuxbrew \
-    && chown -R abc:abc /home/abc/.linuxbrew
+# Install nvm system-wide (will be available for all users)
+ENV NVM_DIR=/usr/local/nvm
+RUN mkdir -p $NVM_DIR \
+    && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash \
+    && chmod -R 777 $NVM_DIR
 
-# Set up environment for abc user
-RUN echo 'eval "$(/home/abc/.linuxbrew/bin/brew shellenv)"' >> /home/abc/.bashrc \
-    && echo 'export PATH="/home/abc/.linuxbrew/bin:$PATH"' >> /home/abc/.bashrc
+# Add nvm to bashrc for abc user
+RUN echo 'export NVM_DIR="/usr/local/nvm"' >> /home/abc/.bashrc \
+    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /home/abc/.bashrc
 
-# Install nvm (Node Version Manager) for abc user
-RUN su - abc -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+# Install Homebrew to persistent location
+RUN mkdir -p /config/homebrew \
+    && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip-components=1 -C /config/homebrew
 
-# Add nvm to bashrc
-RUN echo 'export NVM_DIR="$HOME/.nvm"' >> /home/abc/.bashrc \
-    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /home/abc/.bashrc \
-    && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> /home/abc/.bashrc
+# Add brew to bashrc for abc user  
+RUN echo 'eval "$(/config/homebrew/bin/brew shellenv)"' >> /home/abc/.bashrc
 
 # Create OpenCode config directory in persistent location
-RUN mkdir -p /config/opencode
+RUN mkdir -p /config/opencode \
+    && chown -R abc:abc /config/opencode
 
-# Install OpenCode via install script (more reliable than brew)
+# Install OpenCode (as root, binary goes to /usr/local/bin)
 RUN curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/main/install.sh | bash
 
-# Symlink OpenCode config to persistent location
-RUN mkdir -p /home/abc/.config && \
-    ln -sf /config/opencode /home/abc/.config/opencode && \
-    chown -R abc:abc /config/opencode
+# Ensure abc owns home config
+RUN mkdir -p /home/abc/.config \
+    && chown -R abc:abc /home/abc/.config \
+    && ln -sf /config/opencode /home/abc/.config/opencode
 
 # Add OpenClaw aliases
 RUN echo 'alias oc="docker exec -it \$(docker ps -q -f name=openclaw) openclaw"' >> /home/abc/.bashrc \
