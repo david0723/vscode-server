@@ -13,11 +13,11 @@ RUN apt-get update && apt-get install -y \
     zsh \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Oh My Zsh for abc user
-RUN su - abc -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended'
-
 # Set zsh as default shell for abc user
 RUN chsh -s $(which zsh) abc
+
+# Clone minimal zsh config (skip Oh My Zsh for now - install manually later if needed)
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/abc/.powerlevel10k 2>/dev/null || true
 
 # Install Docker CLI
 RUN curl -fsSL https://get.docker.com -o /tmp/get-docker.sh \
