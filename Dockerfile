@@ -46,8 +46,16 @@ RUN echo 'export NVM_DIR="$HOME/.nvm"' >> /home/abc/.bashrc \
     && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /home/abc/.bashrc \
     && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> /home/abc/.bashrc
 
+# Create OpenCode config directory in persistent location
+RUN mkdir -p /config/opencode
+
 # Install OpenCode via install script (more reliable than brew)
 RUN curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/main/install.sh | bash
+
+# Symlink OpenCode config to persistent location
+RUN mkdir -p /home/abc/.config && \
+    ln -sf /config/opencode /home/abc/.config/opencode && \
+    chown -R abc:abc /config/opencode
 
 # Add OpenClaw aliases
 RUN echo 'alias oc="docker exec -it \$(docker ps -q -f name=openclaw) openclaw"' >> /home/abc/.bashrc \
